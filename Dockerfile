@@ -1,14 +1,14 @@
 FROM alpine:latest
 
-RUN apk add nginx
+RUN apk update && apk add nginx git
 
-RUN apk add git
+RUN rm /etc/nginx/nginx.conf
 
-RUN git clone https://github.com/veekrum/task.git /tmp/task
+RUN git clone https://github.com/veekrum/task /tmp/task
+
+RUN mv /tmp/task /var/www/html
 
 COPY nginx.conf /etc/nginx/nginx.conf
-
-RUN cp -r /tmp/task/site/. /usr/share/nginx/html
 
 EXPOSE 9000
 

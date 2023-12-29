@@ -13,20 +13,20 @@ Then I cloned that repo in my local machine and after a long R&D I am able to wr
 FROM alpine:latest
 -This line sets the latest version of Alpine Linux as the base image.
 
-RUN apk add nginx
--This line uses the package manager apk to install the Nginx web server in the Alpine Linux environment.
+RUN apk update && apk add nginx git
+-This command updates the package index of the Alpine Linux package manager and installs two packages, nginx and git, in the Alpine Linux Environment.
 
-RUN apk add git
--Does same, instead nginx, it install Git which is required later in the Dockerfile to clone a Git repository.
+RUN rm /etc/nginx/nginx.conf
+-Removes the default nginx configuration file which is located at the mentioned path.
 
 RUN git clone https://github.com/veekrum/task.git /tmp/task
 -This line clones a Git repository (https://github.com/veekrum/task.git) into the /tmp/task directory inside the Docker image which will be used later.
 
+RUN mv /tmp/task /var/www/html
+-This command is used to move the contents of the /tmp/task directory to the /var/www/html directory within the Docker image during the image-building process.
+
 COPY nginx.conf /etc/nginx/nginx.conf
 -This line copies a custom Nginx configuration file (nginx.conf) from the local build context to the /etc/nginx/nginx.conf path inside the Docker image. This allows you to customize the Nginx configuration.
-
-RUN cp -r /tmp/task/site/. /usr/share/nginx/html
--This line copies the contents of the /tmp/task/site/ directory into the Nginx web server's default root directory, which is /usr/share/nginx/html.
 
 EXPOSE 9000
 -This line informs Docker that the container will listen on port 9000 at runtime.
@@ -36,7 +36,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 #nginx.conf
 
-worker_processes 1;
+"worker_processes 1;
 
 events {
     worker_connections 1024;
@@ -57,15 +57,10 @@ http {
         server_name localhost;
 
         location / {
-            root /usr/share/nginx/html;
+            root /var/www/html;
             index index.html;
-            try_files $uri $uri/ /index.html;
-        }
-
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
-            root /usr/share/nginx/html;
         }
     }
-}
+}"
+
 In nginx.conf, I am able to understand much of line 56 ie listen on the port 80 which is then mapped to some different or same port in order to access the file in our local machine at the specified port and of line 59 ie location to setup the path from where we can access our file which is utilized later.
